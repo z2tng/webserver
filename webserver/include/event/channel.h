@@ -5,7 +5,7 @@
 
 namespace event {
 
-class Channel {
+class Channel : public std::enable_shared_from_this<Channel> {
 public:
     using EventCallback = std::function<void()>;
 
@@ -19,6 +19,7 @@ public:
     void set_fd(int fd) { fd_ = fd; }
 
     int events() const { return events_; }
+    int last_events() const { return last_events_; }
     void set_events(int events) { events_ = events; }
     void set_revents(int revents) { revents_ = revents; }
     bool update_last_events() {
