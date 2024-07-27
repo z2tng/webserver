@@ -20,10 +20,10 @@ EventLoopThread::~EventLoopThread() {
     }
 }
 
-std::shared_ptr<EventLoop> EventLoopThread::StartLoop() {
+EventLoop* EventLoopThread::StartLoop() {
     thread_.Start();
 
-    std::shared_ptr<EventLoop> loop(nullptr);
+    EventLoop *loop = nullptr;
     {
         std::unique_lock<std::mutex> lock(mutex_);
         while (loop_ == nullptr) {
@@ -40,13 +40,13 @@ void EventLoopThread::ThreadFunction() {
 
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        loop_ = std::make_shared<EventLoop>(std::move(loop));
+        loop_ = &loop;
         cond_.notify_one();
     }
 
     loop_->Loop();
     std::unique_lock<std::mutex> lock(mutex_);
-    loop_.reset();
+    loop_ = nullptr;
 }
 
 } // namespace event

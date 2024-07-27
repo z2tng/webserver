@@ -19,12 +19,12 @@ public:
     EventLoopThread(const ThreadInitCallback &cb = ThreadInitCallback());
     ~EventLoopThread();
 
-    std::shared_ptr<EventLoop> StartLoop();
+    EventLoop* StartLoop();
 
 private:
     void ThreadFunction();
 
-    std::shared_ptr<EventLoop> loop_;
+    EventLoop* loop_;
     thread::Thread thread_;
     std::mutex mutex_;
     std::condition_variable cond_;
