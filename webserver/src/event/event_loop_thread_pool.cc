@@ -28,9 +28,9 @@ void EventLoopThreadPool::Start(const ThreadInitCallback &cb) {
     }
 
     for (int i = 0; i < num_threads_; ++i) {
-        std::shared_ptr<EventLoopThread> thread(new EventLoopThread(cb));
-        sub_loop_threads_.emplace_back(thread);
-        sub_loops_.emplace_back(thread->StartLoop());
+        EventLoopThread *thread = new EventLoopThread(cb);
+        sub_loop_threads_.push_back(std::unique_ptr<EventLoopThread>(thread));
+        sub_loops_.push_back(thread->StartLoop());
     }
 }
 

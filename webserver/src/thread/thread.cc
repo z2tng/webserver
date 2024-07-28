@@ -1,10 +1,11 @@
 #include "thread/thread.h"
 
-namespace current_thread {
+namespace current {
 
 thread_local int t_cached_tid = 0;
     
-} // namespace current_thread
+} // namespace current
+
 
 namespace thread {
 

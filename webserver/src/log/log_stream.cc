@@ -1,5 +1,7 @@
 #include "log/log_stream.h"
 
+#include <algorithm>
+
 namespace log {
 
 template <typename T>

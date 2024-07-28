@@ -34,7 +34,7 @@ public:
         size_ += size;
     }
 
-    void reset() {
+    void clear() {
         current_ = buffer_;
         size_ = 0;
     }
@@ -79,7 +79,7 @@ public:
 
     void Write(const char* buffer, int size) { buffer_.write(buffer, size); }
     const Buffer& buffer() const { return buffer_; }
-    void reset() { buffer_.reset(); }
+    void clear() { buffer_.clear(); }
 
 private:
     template <typename T>

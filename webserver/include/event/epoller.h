@@ -7,10 +7,10 @@
 #include <unordered_map>
 #include <sys/epoll.h>
 
-class Channel;
 
-namespace event
-{
+namespace event {
+
+class Channel;
 
 class Epoller : utils::Uncopyable {
 public:

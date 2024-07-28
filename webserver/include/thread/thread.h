@@ -13,7 +13,7 @@
 
 namespace current_thread {
 
-thread_local int t_cached_tid;
+extern thread_local int t_cached_tid;
 
 inline int tid() {
     if (__builtin_expect(t_cached_tid == 0, 0)) {

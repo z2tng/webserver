@@ -9,7 +9,7 @@
 namespace event {
 
 class EventLoop;
-class EventLooopThread;
+class EventLoopThread;
 
 class EventLoopThreadPool : utils::Uncopyable {
 public:
@@ -22,15 +22,12 @@ public:
     EventLoop* GetNextLoop();
 
 private:
-    using EventLoopThreadList = std::vector<std::shared_ptr<EventLooopThread>>;
-    using EventLoopList = std::vector<EventLoop*>;
-
     EventLoop* main_loop_;
     bool is_started_;
     int num_threads_;
     int next_;
-    EventLoopThreadList sub_loop_threads_;
-    EventLoopList sub_loops_;
+    std::vector<std::unique_ptr<EventLoopThread>> sub_loop_threads_;
+    std::vector<EventLoop*> sub_loops_;
 };
     
 } // namespace event

@@ -7,7 +7,6 @@
 #include <sys/eventfd.h>
 #include <fcntl.h>
 
-
 namespace event {
 
 __thread EventLoop *t_loop_in_this_thread = nullptr;
