@@ -43,6 +43,11 @@ void Epoller::Poll(ChannelList &active_channels) {
     }
 }
 
+bool Epoller::HasChannel(std::shared_ptr<Channel> sp_channel) const {
+    auto it = channel_map_.find(sp_channel->fd());
+    return it != channel_map_.end() && it->second == sp_channel;
+}
+
 void Epoller::EpollAdd(std::shared_ptr<Channel> sp_channel, int timeout) {
     // TODO: 处理超时
     int fd = sp_channel->fd();

@@ -1,12 +1,12 @@
 #include "event/channel.h"
+#include "event/event_loop.h"
 
 #include <sys/epoll.h>
 
 namespace event {
 
-Channel::Channel() : fd_(-1), events_(0), revents_(0), holded_(false) {}
-
-Channel::Channel(int fd) : fd_(fd), events_(0), revents_(0), holded_(false) {}
+Channel::Channel(EventLoop *loop, int fd)
+        : loop_(loop), fd_(fd), events_(0), revents_(0), holded_(false) {}
 
 Channel::~Channel() {}
 
@@ -23,14 +23,11 @@ void Channel::HandleEvents() {
 
 void Channel::HandleEventsWithGuard() {
     if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN)) {
-        events_ = 0;
-        return;
+        if (close_callback_) close_callback_();
     }
 
     if (revents_ & EPOLLERR) {
         if (error_callback_) error_callback_();
-        events_ = 0;
-        return;
     }
 
     if (revents_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
@@ -40,8 +37,14 @@ void Channel::HandleEventsWithGuard() {
     if (revents_ & EPOLLOUT) {
         if (write_callback_) write_callback_();
     }
+}
 
-    if (update_callback_) update_callback_();
+void Channel::update() {
+    loop_->PollerMod(shared_from_this());
+}
+
+void Channel::Remove() {
+    loop_->PollerDel(shared_from_this());
 }
 
 }

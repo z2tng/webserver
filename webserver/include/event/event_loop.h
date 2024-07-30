@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/uncopyable.h"
+#include "thread/thread.h"
 #include "epoller.h"
 
 #include <functional>
@@ -30,6 +31,10 @@ public:
     void RunInLoop(const Function &func);
     void QueueInLoop(const Function &func);
 
+    bool HasChannel(std::shared_ptr<Channel> channel) const {
+        return epoller_->HasChannel(channel);
+    }
+
     void PollerAdd(std::shared_ptr<Channel> channel, int timeout = 0) {
         epoller_->EpollAdd(channel, timeout);
     }
@@ -40,12 +45,11 @@ public:
         epoller_->EpollDel(channel);
     }
 
-    bool is_in_loop_thread() const {}
+    bool is_in_loop_thread() const { return thread_id_ == current_thread::tid(); }
 
 private:
     static int CreateEventFd();
     void HandleRead();
-    void HandleUpdate();
     void PerformPendingFunctions();
 
     using ChannelList = std::vector<std::shared_ptr<Channel>>;

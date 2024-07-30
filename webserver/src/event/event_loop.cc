@@ -2,6 +2,7 @@
 #include "event/channel.h"
 #include "event/epoller.h"
 #include "thread/thread.h"
+#include "log/logger.h"
 
 #include <unistd.h>
 #include <sys/eventfd.h>
@@ -14,7 +15,7 @@ __thread EventLoop *t_loop_in_this_thread = nullptr;
 int EventLoop::CreateEventFd() {
     int event_fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (eventfd < 0) {
-        // TODO: LOG create eventfd error
+        LOG_ERROR << "Create eventfd error";
     }
     return event_fd;
 }
@@ -22,24 +23,27 @@ int EventLoop::CreateEventFd() {
 EventLoop::EventLoop()
         : thread_id_(current_thread::tid()),
           wakeup_fd_(CreateEventFd()),
-          wakeup_channel_(new Channel()),
+          wakeup_channel_(new Channel(this, wakeup_fd_)),
           epoller_(new Epoller()),
           is_looping_(false),
           is_quit_(false),
           is_handling_(false),
           is_calling_pending_functions_(false) {
-    
-    // TODO: LOG create EventLoop in thread
+    LOG_INFO << "EventLoop created " << this << " in thread " << thread_id_;
     if (t_loop_in_this_thread) {
-        // TODO: error, one loop per thread
+        LOG_FATAL << "Another EventLoop " << t_loop_in_this_thread
+                  << " exists in this thread " << thread_id_;
+    } else {
+        t_loop_in_this_thread = this;
     }
-    wakeup_channel_->set_fd(wakeup_fd_);
-    wakeup_channel_->set_read_callback(std::bind(&EventLoop::HandleRead, this));
+    wakeup_channel_->SetReadCallback(std::bind(&EventLoop::HandleRead, this));
+    wakeup_channel_->EnableReading();
 }
 
 EventLoop::~EventLoop() {
     ::close(wakeup_fd_);
-    epoller_->EpollDel(wakeup_channel_);
+    wakeup_channel_->DisableAll();
+    wakeup_channel_->Remove();
     t_loop_in_this_thread = nullptr;
 }
 
@@ -87,22 +91,18 @@ void EventLoop::QueueInLoop(const Function &func) {
 
 void EventLoop::Wakeup() {
     uint64_t one = 1;
-    int n = write(wakeup_fd_, &one, sizeof(one));
+    ssize_t n = write(wakeup_fd_, &one, sizeof(one));
     if (n != sizeof(one)) {
-        //LOG wakeup error
+        LOG_ERROR << "EventLoop::Wakeup() writes " << n << " bytes instead of 8";
     }
 }
 
 void EventLoop::HandleRead() {
     uint64_t one = 1;
-    int n = read(wakeup_fd_, &one, sizeof(one));
+    ssize_t n = read(wakeup_fd_, &one, sizeof(one));
     if (n != sizeof(one)) {
-        //LOG wakeup error
+        LOG_ERROR << "EventLoop::HandleRead() reads " << n << " bytes instead of 8";
     }
-}
-
-void EventLoop::HandleUpdate() {
-    PollerMod(wakeup_channel_);
 }
 
 void EventLoop::PerformPendingFunctions() {
@@ -119,7 +119,5 @@ void EventLoop::PerformPendingFunctions() {
     }
     is_calling_pending_functions_ = false;
 }
-
-
 
 } // namespace event

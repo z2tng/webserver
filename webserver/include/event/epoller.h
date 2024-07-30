@@ -21,6 +21,8 @@ public:
 
     void Poll(ChannelList &active_channels);
 
+    bool HasChannel(std::shared_ptr<Channel> sp_channel) const;
+
     void EpollAdd(std::shared_ptr<Channel> sp_channel, int timeout);
     void EpollMod(std::shared_ptr<Channel> sp_channel, int timeout);
     void EpollDel(std::shared_ptr<Channel> sp_channel);
