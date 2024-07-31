@@ -15,9 +15,10 @@ class EventLoopThreadPool : utils::Uncopyable {
 public:
     using ThreadInitCallback = std::function<void(EventLoop*)>;
 
-    EventLoopThreadPool(EventLoop *main_loop, int num_threads);
+    EventLoopThreadPool(EventLoop *main_loop);
     ~EventLoopThreadPool();
 
+    void SetThreadNum(int num_threads);
     void Start(const ThreadInitCallback &cb = ThreadInitCallback());
     EventLoop* GetNextLoop();
 

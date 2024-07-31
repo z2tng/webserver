@@ -1,22 +1,27 @@
 #include "event/event_loop_thread_pool.h"
-#include "event/event_loop.h"
 #include "event/event_loop_thread.h"
+#include "event/event_loop.h"
+#include "log/logger.h"
 
 namespace event {
 
-EventLoopThreadPool::EventLoopThreadPool(EventLoop *main_loop, int num_threads)
+EventLoopThreadPool::EventLoopThreadPool(EventLoop *main_loop)
         : main_loop_(main_loop),
           is_started_(false),
-          num_threads_(num_threads),
+          num_threads_(0),
           next_(0) {
     if (num_threads_ < 0) {
-        // LOG
+        LOG_ERROR << "Cannot create EventLoopThreadPool with " << num_threads_ << " threads";
     }
-    sub_loop_threads_.reserve(num_threads_);
-    sub_loops_.reserve(num_threads_);
 }
 
 EventLoopThreadPool::~EventLoopThreadPool() {
+}
+
+void EventLoopThreadPool::SetThreadNum(int num_threads) {
+    num_threads_ = num_threads;
+    sub_loop_threads_.reserve(num_threads_);
+    sub_loops_.reserve(num_threads_);
 }
 
 void EventLoopThreadPool::Start(const ThreadInitCallback &cb) {
