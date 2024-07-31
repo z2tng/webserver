@@ -1,5 +1,5 @@
-#include "connection/socket.h"
-#include "connection/inet_address.h"
+#include "net/socket.h"
+#include "net/inet_address.h"
 #include "log/logger.h"
 
 #include <arpa/inet.h>
@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <strings.h>
 
-namespace connection {
+namespace net {
 
 Socket::~Socket() {
     ::close(sockfd_);

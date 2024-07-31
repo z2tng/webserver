@@ -3,7 +3,7 @@
 #include <arpa/inet.h>
 #include <string>
 
-namespace connection {
+namespace net {
 
 class InetAddress {
 public:

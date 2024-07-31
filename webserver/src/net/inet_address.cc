@@ -1,8 +1,8 @@
-#include "connection/inet_address.h"
+#include "net/inet_address.h"
 
 #include <strings.h>
 
-namespace connection {
+namespace net {
 
 InetAddress::InetAddress(uint16_t port, const std::string &ip) {
     bzero(&addr_, sizeof(addr_));

@@ -1,10 +1,10 @@
-#include "connection/buffer.h"
+#include "net/buffer.h"
 
 #include <errno.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
-namespace connection {
+namespace net {
 
 ssize_t Buffer::ReadFd(int fd, int *saved_errno) {
     char buffer[65536];

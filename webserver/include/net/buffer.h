@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace connection {
+namespace net {
 
 class Buffer : utils::Uncopyable {
 public:

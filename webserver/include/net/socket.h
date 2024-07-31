@@ -2,7 +2,7 @@
 
 #include "utils/uncopyable.h"
 
-namespace connection {
+namespace net {
 
 class InetAddress;
 
