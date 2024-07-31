@@ -24,23 +24,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wfatal-errors -Wno-unused-
 #CPP源文件
 file(GLOB UTILS_SRC_FILE          ${SRC_DIR}/utils/*.cc)
 file(GLOB THREAD_SRC_FILE         ${SRC_DIR}/thread/*.cc)
-file(GLOB TIMER_SRC_FILE          ${SRC_DIR}/timer/*.cc)
 file(GLOB LOG_SRC_FILE            ${SRC_DIR}/log/*.cc)
 file(GLOB MEMORY_SRC_FILE         ${SRC_DIR}/memory/*.cc)
 file(GLOB EVENT_SRC_FILE          ${SRC_DIR}/event/*.cc)
-file(GLOB PAGECACHE_SRC_FILE      ${SRC_DIR}/pagecache/*.cc)
-file(GLOB CONNECTION_SRC_FILE     ${SRC_DIR}/connection/*.cc)
-file(GLOB SERVER_SRC_FILE         ${SRC_DIR}/server/*.cc)
+file(GLOB NET_SRC_FILE            ${SRC_DIR}/net/*.cc)
 
 set(LIBEVENT_SOURCES ${UTILS_SRC_FILE}
                      ${THREAD_SRC_FILE}
-                     ${TIMER_SRC_FILE}
                      ${LOG_SRC_FILE}
                      ${MEMORY_SRC_FILE}
                      ${EVENT_SRC_FILE}
-                     ${PAGECACHE_SRC_FILE}
-                     ${CONNECTION_SRC_FILE}
-                     ${SERVER_SRC_FILE})
+                     ${NET_SRC_FILE})
 
 #头文件路径添加
 include_directories(${INC_DIR})
