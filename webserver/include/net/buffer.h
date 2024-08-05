@@ -4,6 +4,8 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cstring>
 
 namespace net {
 
@@ -26,8 +28,27 @@ public:
     size_t ReadableBytes() const { return write_index_ - read_index_; }
     size_t WritableBytes() const { return buffer_.size() - write_index_; }
     size_t PrependableBytes() const { return read_index_; }
-
     const char* Peek() const { return begin() + read_index_; }
+
+    const char* FindCRLF() const {
+        const char* crlf = std::search(Peek(), begin() + write_index_, kCRLF, kCRLF + 2);
+        return crlf == begin() + write_index_ ? nullptr : crlf;
+    }
+
+    const char* FindCRLF(const char* start) const {
+        const void* crlf = memmem(start, begin() + write_index_ - start, kCRLF, 2);
+        return static_cast<const char*>(crlf);
+    }
+
+    const char* FindEOL() const {
+        const char* eol = std::find(Peek(), begin() + write_index_, '\n');
+        return eol == begin() + write_index_ ? nullptr : eol;
+    }
+
+    const char* FindEOL(const char* start) const {
+        const void* eol = memchr(start, '\n', begin() + write_index_ - start);
+        return static_cast<const char*>(eol);
+    }
 
     void Retrieve(size_t len) {
         if (len < ReadableBytes()) {
@@ -37,15 +58,35 @@ public:
         }
     }
 
+    void RetrieveUntil(const char* end) {
+        Retrieve(end - Peek());
+    }
+
     void RetrieveAll() {
         read_index_ = kPrependSize;
         write_index_ = kPrependSize;
+    }
+
+    std::string RetrieveAsString(size_t len) {
+        std::string str(Peek(), len);
+        Retrieve(len);
+        return str;
+    }
+
+    std::string RetrieveAllAsString() {
+        std::string str(Peek(), ReadableBytes());
+        RetrieveAll();
+        return str;
     }
 
     void Append(const char* data, size_t len) {
         EnsureWritableBytes(len);
         std::copy(data, data + len, begin() + write_index_);
         write_index_ += len;
+    }
+
+    void Append(const std::string& str) {
+        Append(str.data(), str.size());
     }
 
     void EnsureWritableBytes(size_t len) {
@@ -61,20 +102,13 @@ private:
     char* begin() { return &buffer_[0]; }
     const char* begin() const { return &buffer_[0]; }
 
-    void MakeSpace(size_t len) {
-        if (WritableBytes() + PrependableBytes() < len + kPrependSize) {
-            buffer_.resize(write_index_ + len);
-        } else {
-            size_t readable = ReadableBytes();
-            std::copy(begin() + read_index_, begin() + write_index_, begin() + kPrependSize);
-            read_index_ = kPrependSize;
-            write_index_ = read_index_ + readable;
-        }
-    }
+    void MakeSpace(size_t len);
 
     std::vector<char> buffer_;
     size_t read_index_;
     size_t write_index_;
+
+    static const char kCRLF[];
 };
     
 } // namespace connection

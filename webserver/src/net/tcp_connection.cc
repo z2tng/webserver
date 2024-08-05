@@ -31,7 +31,7 @@ void TcpConnection::HandleRead() {
     int saved_errno = 0;
     ssize_t n = input_buffer_.ReadFd(channel_->fd(), &saved_errno);
     if (n > 0) {
-        message_callback_(shared_from_this(), input_buffer_);
+        message_callback_(shared_from_this(), &input_buffer_);
     } else if (n == 0) {
         HandleClose();
     } else {
@@ -92,6 +92,20 @@ void TcpConnection::Send(const std::string &message) {
             SendInLoop(message.c_str(), message.size());
         } else {
             loop_->QueueInLoop(std::bind(&TcpConnection::SendInLoop, this, message.c_str(), message.size()));
+        }
+    }
+}
+
+void TcpConnection::Send(Buffer *buffer) {
+    if (state_ == kConnected) {
+        if (loop_->is_in_loop_thread()) {
+            SendInLoop(buffer->Peek(), buffer->ReadableBytes());
+            buffer->RetrieveAll();
+        } else {
+            loop_->QueueInLoop([this, &buffer]() {
+                SendInLoop(buffer->Peek(), buffer->ReadableBytes());
+                buffer->RetrieveAll();
+            });
         }
     }
 }

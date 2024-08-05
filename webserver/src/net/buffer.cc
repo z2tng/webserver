@@ -6,6 +6,8 @@
 
 namespace net {
 
+const char Buffer::kCRLF[] = "\r\n";
+
 ssize_t Buffer::ReadFd(int fd, int *saved_errno) {
     char buffer[65536];
     struct iovec vec[2];
@@ -38,6 +40,17 @@ ssize_t Buffer::WriteFd(int fd, int *saved_errno) {
     }
 
     return n;
+}
+
+void Buffer::MakeSpace(size_t len) {
+    if (WritableBytes() + PrependableBytes() < len + kPrependSize) {
+        buffer_.resize(write_index_ + len);
+    } else {
+        size_t readable = ReadableBytes();
+        std::copy(begin() + read_index_, begin() + write_index_, begin() + kPrependSize);
+        read_index_ = kPrependSize;
+        write_index_ = read_index_ + readable;
+    }
 }
     
 } // namespace connection

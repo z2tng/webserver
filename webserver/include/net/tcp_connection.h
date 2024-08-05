@@ -24,7 +24,7 @@ class TcpConnection;
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 using ConnectionCallback = std::function<void(const TcpConnectionPtr&)>;
-using MessageCallback = std::function<void(const TcpConnectionPtr&, const Buffer&)>;
+using MessageCallback = std::function<void(const TcpConnectionPtr&, Buffer*)>;
 using CloseCallback = std::function<void(const TcpConnectionPtr&)>;
 using WriteCompleteCallback = std::function<void(const TcpConnectionPtr&)>;
 using HighWaterMarkCallback = std::function<void(const TcpConnectionPtr&, size_t)>;
@@ -50,6 +50,7 @@ public:
     bool Disconnected() const { return state_ == kDisconnected; }
 
     void Send(const std::string &message);
+    void Send(Buffer *buffer);
     void Shutdown();
 
     void SetConnectionCallback(const ConnectionCallback &cb) { connection_callback_ = cb; }
@@ -101,7 +102,6 @@ private:
     HighWaterMarkCallback high_water_mark_callback_;
 
     size_t high_water_mark_;
-
 };
     
 } // namespace connection
