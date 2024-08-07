@@ -41,7 +41,7 @@ using KeyNode = Node<Key>;
 class KeyList {
 public:
     KeyList() = default;
-    ~KeyList() = default;
+    ~KeyList();
 
     void init(int freq);
     void clear();
