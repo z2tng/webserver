@@ -26,6 +26,7 @@ file(GLOB UTILS_SRC_FILE          ${SRC_DIR}/utils/*.cc)
 file(GLOB THREAD_SRC_FILE         ${SRC_DIR}/thread/*.cc)
 file(GLOB LOG_SRC_FILE            ${SRC_DIR}/log/*.cc)
 file(GLOB MEMORY_SRC_FILE         ${SRC_DIR}/memory/*.cc)
+file(GLOB CACHE_SRC_FILE          ${SRC_DIR}/cache/*.cc)
 file(GLOB EVENT_SRC_FILE          ${SRC_DIR}/event/*.cc)
 file(GLOB NET_SRC_FILE            ${SRC_DIR}/net/*.cc)
 
@@ -33,6 +34,7 @@ set(LIBEVENT_SOURCES ${UTILS_SRC_FILE}
                      ${THREAD_SRC_FILE}
                      ${LOG_SRC_FILE}
                      ${MEMORY_SRC_FILE}
+                     ${CACHE_SRC_FILE}
                      ${EVENT_SRC_FILE}
                      ${NET_SRC_FILE})
 
