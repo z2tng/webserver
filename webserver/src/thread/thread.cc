@@ -1,5 +1,7 @@
 #include "thread/thread.h"
 
+#include <semaphore.h>
+
 namespace current_thread {
 
 thread_local int t_cached_tid = 0;
@@ -30,11 +32,17 @@ Thread::~Thread() {
 }
 
 void Thread::Start() {
-    std::call_once(flag_, [this] {
-        is_started_ = true;
+    is_started_ = true;
+    sem_t sem;
+    sem_init(&sem, false, 0);
+
+    thread_ = std::thread([&] {
         thread_id_ = std::this_thread::get_id();
+        sem_post(&sem);
         func_();
     });
+
+    sem_wait(&sem);
 }
 
 void Thread::Join() {
