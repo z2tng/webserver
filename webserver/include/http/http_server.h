@@ -7,17 +7,15 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
 namespace http {
 
 class HttpServer : utils::Uncopyable {
 public:
-    using HttpCallback = std::function<void(const HttpRequestParser&, HttpResponse*)>;
+    using HttpCallback = std::function<void(const HttpRequestParser&, HttpResponse&, const std::string&)>;
 
-    HttpServer(event::EventLoop *loop,
-               const net::InetAddress &addr,
-               const std::string &name,
-               net::TcpServer::Option option = net::TcpServer::kNoReusePort);
+    HttpServer(event::EventLoop *loop, const net::InetAddress &addr);
     ~HttpServer() = default;
 
     void SetHttpCallback(const HttpCallback &cb) { http_callback_ = cb; }
@@ -30,6 +28,8 @@ private:
     void onConnection(const net::TcpConnectionPtr &conn);
     void onMessage(const net::TcpConnectionPtr &conn, net::Buffer *buf);
     void onRequest(const net::TcpConnectionPtr &conn, const HttpRequestParser &req);
+
+    std::string web_root_;
 
     net::TcpServer server_;
     HttpCallback http_callback_;

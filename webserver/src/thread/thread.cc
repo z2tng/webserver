@@ -1,6 +1,6 @@
 #include "thread/thread.h"
 
-namespace current {
+namespace current_thread {
 
 thread_local int t_cached_tid = 0;
     
