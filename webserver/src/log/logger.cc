@@ -6,22 +6,20 @@
 #include <condition_variable>
 #include <time.h>
 
-namespace log {
+namespace logging {
 
 std::string Logger::log_file_name_ = "./server.log";
 
+static std::once_flag flag;
 static std::shared_ptr<AsyncLogging> async_logging;
 
 void OnceInit() {
-    static std::once_flag flag;
-    std::call_once(flag, []() {
-        async_logging = std::make_shared<AsyncLogging>(Logger::GetLogFileName());
-        if (async_logging) async_logging->Start();
-    });
+    async_logging = std::make_shared<AsyncLogging>(Logger::GetLogFileName());
+    async_logging->Start();
 }
 
 void WriteLog(const char *log, size_t size, bool is_fatal) {
-    OnceInit();
+    std::call_once(flag, OnceInit);
     async_logging->Write(log, size, is_fatal);
 }
 

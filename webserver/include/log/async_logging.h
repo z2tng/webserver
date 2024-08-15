@@ -13,15 +13,13 @@
 #include <condition_variable>
 
 
-namespace log {
+namespace logging {
 
 class FileUtils {
 public:
-    explicit FileUtils(const std::string &file_name,
-                       size_t buffer_size = 64 * 1024)
+    explicit FileUtils(const std::string &file_name)
             : fp_(fopen(file_name.c_str(), "ae")) {
-        buffer_.resize(buffer_size);
-        setvbuf(fp_, &buffer_[0], _IOFBF, buffer_size);
+        setbuffer(fp_, buffer_, sizeof(buffer_));
     }
 
     ~FileUtils() {
@@ -51,7 +49,7 @@ public:
 
 private:
     FILE *fp_;
-    std::vector<char> buffer_;
+    char buffer_[64 * 1024];
 };
 
 class LogFile : utils::Uncopyable {
@@ -121,5 +119,5 @@ private:
 
 };
 
-} // namespace log
+} // namespace logging
 

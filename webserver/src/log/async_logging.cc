@@ -1,6 +1,6 @@
 #include "log/async_logging.h"
 
-namespace log {
+namespace logging {
 
 AsyncLogging::AsyncLogging(const std::string &file_name, int timeout)
         : file_name_(file_name),
@@ -21,29 +21,30 @@ AsyncLogging::~AsyncLogging() {
 
 void AsyncLogging::Write(const char *log, size_t size, bool is_fatal) {
     std::lock_guard<std::mutex> lock(mutex_);
-
-    if (current_buffer_->capacity() > size) {
-        current_buffer_->write(log, size);
-        if (is_fatal) {
-            Stop();
-            abort();
-        }
-    } else {
-        buffers_.push_back(current_buffer_);
-        current_buffer_.reset();
-        if (next_buffer_) {
-            current_buffer_ = std::move(next_buffer_);
+    {
+        if (current_buffer_->capacity() > size) {
+            current_buffer_->write(log, size);
+            if (is_fatal) {
+                Stop();
+                abort();
+            }
         } else {
-            current_buffer_.reset(new Buffer);
-        }
+            buffers_.push_back(current_buffer_);
+            current_buffer_.reset();
+            if (next_buffer_) {
+                current_buffer_ = std::move(next_buffer_);
+            } else {
+                current_buffer_.reset(new Buffer);
+            }
 
-        current_buffer_->write(log, size);
-        if (is_fatal) {
-            Stop();
-            abort();
+            current_buffer_->write(log, size);
+            if (is_fatal) {
+                Stop();
+                abort();
+            }
+            // 通知后台线程有数据需要写入文件
+            cond_.notify_one();
         }
-
-        cond_.notify_one();
     }
 }
 

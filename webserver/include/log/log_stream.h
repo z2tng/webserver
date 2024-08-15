@@ -6,7 +6,7 @@
 #include <string.h>
 #include <string>
 
-namespace log {
+namespace logging {
 
 const int kSmallBufferSize = 4 * 1024;
 const int kLargeBufferSize = 4 * 1024 * 1024;

@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace log {
+namespace logging {
 
 class Logger {
 public:
@@ -51,13 +51,13 @@ enum LogLevel {
     FATAL
 };
 
-#define LOG_INFO log::Logger(__FILE__, __LINE__, INFO).stream()
-#define LOG_WARN log::Logger(__FILE__, __LINE__, WARN).stream()
-#define LOG_ERROR log::Logger(__FILE__, __LINE__, ERROR).stream()
-#define LOG_FATAL log::Logger(__FILE__, __LINE__, FATAL).stream()
+#define LOG_INFO logging::Logger(__FILE__, __LINE__, INFO).stream()
+#define LOG_WARN logging::Logger(__FILE__, __LINE__, WARN).stream()
+#define LOG_ERROR logging::Logger(__FILE__, __LINE__, ERROR).stream()
+#define LOG_FATAL logging::Logger(__FILE__, __LINE__, FATAL).stream()
 
 #ifdef ON_DEBUG
 #define LOG_DEBUG log::Logger(__FILE__, __LINE__, DEBUG).stream()
 #else
-#define LOG_DEBUG false && log::Logger(__FILE__, __LINE__, DEBUG).stream()
+#define LOG_DEBUG false && logging::Logger(__FILE__, __LINE__, DEBUG).stream()
 #endif

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace log {
+namespace logging {
 
 template <typename T>
 size_t IntToString(char *buffer, T value) {
