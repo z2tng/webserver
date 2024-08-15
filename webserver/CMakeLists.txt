@@ -2,7 +2,6 @@
 project(WebServer LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.5.1)
 
-#开关
 #项目根目录
 set(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
 #源码目录
@@ -29,6 +28,8 @@ file(GLOB MEMORY_SRC_FILE         ${SRC_DIR}/memory/*.cc)
 file(GLOB CACHE_SRC_FILE          ${SRC_DIR}/cache/*.cc)
 file(GLOB EVENT_SRC_FILE          ${SRC_DIR}/event/*.cc)
 file(GLOB NET_SRC_FILE            ${SRC_DIR}/net/*.cc)
+file(GLOB HTTP_SRC_FILE           ${SRC_DIR}/http/*.cc)
+set(MAIN_SRC_FILE                 ${ROOT_DIR}/main.cc)
 
 set(LIBEVENT_SOURCES ${UTILS_SRC_FILE}
                      ${THREAD_SRC_FILE}
@@ -36,7 +37,8 @@ set(LIBEVENT_SOURCES ${UTILS_SRC_FILE}
                      ${MEMORY_SRC_FILE}
                      ${CACHE_SRC_FILE}
                      ${EVENT_SRC_FILE}
-                     ${NET_SRC_FILE})
+                     ${NET_SRC_FILE}
+                     ${HTTP_SRC_FILE})
 
 #头文件路径添加
 include_directories(${INC_DIR})
@@ -47,5 +49,19 @@ set(LINK_LIBRARY pthread)
 
 #生成动态链接库
 add_library(event_shared SHARED ${LIBEVENT_SOURCES})
+set_target_properties(event_shared PROPERTIES OUTPUT_NAME event)
+target_link_libraries(event_shared ${LINK_LIBRARY})
+
 #生成静态库
 add_library(event_static STATIC ${LIBEVENT_SOURCES})
+set_target_properties(event_static PROPERTIES OUTPUT_NAME event)
+target_link_libraries(event_static ${LINK_LIBRARY})
+
+#生成可执行文件
+add_executable(webserver ${MAIN_SRC_FILE})
+target_link_libraries(webserver event_static ${LINK_LIBRARY})
+
+#安装
+install(TARGETS webserver DESTINATION ${EXEC_INSTALL_DIR})
+install(TARGETS event_shared DESTINATION ${LIB_INSTALL_DIR})
+install(TARGETS event_static DESTINATION ${LIB_INSTALL_DIR})
