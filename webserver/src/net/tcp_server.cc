@@ -23,7 +23,7 @@ TcpServer::TcpServer(event::EventLoop *loop,
           thread_pool_(std::make_shared<event::EventLoopThreadPool>(loop_)),
           connection_callback_(),
           message_callback_(),
-          started_(false),
+          started_(0),
           next_conn_id_(1) {
     accept_socket_->SetReuseAddr(true);
     accept_socket_->SetReusePort(option == kReusePort);
@@ -49,13 +49,15 @@ void TcpServer::SetThreadNum(int num_threads) {
 }
 
 void TcpServer::Start() {
-    thread_pool_->Start(thread_init_callback_);
-    loop_->RunInLoop(
-        [this]() {
-            accept_socket_->Listen();
-            accept_channel_->EnableReading();
-        }
-    );
+    if (started_++ == 0) {
+        thread_pool_->Start(thread_init_callback_);
+        loop_->RunInLoop(
+            [this]() {
+                accept_socket_->Listen();
+                accept_channel_->EnableReading();
+            }
+        );
+    }
 }
 
 void TcpServer::HandleNewConnection() {
@@ -70,16 +72,29 @@ void TcpServer::HandleNewConnection() {
         return;
     }
 
+    // 获取下一个EventLoop (轮询)
     event::EventLoop *loop = thread_pool_->GetNextLoop();
     std::string conn_name = name_ + "-" + std::to_string(next_conn_id_++);
     LOG_INFO << "TcpServer::HandleNewConnection [" << name_
              << "] - new connection [" << conn_name
              << "] from " << peer_addr.GetIpPort();
 
-    TcpConnectionPtr conn = std::make_shared<TcpConnection>(
-        loop, connfd, *addr_, peer_addr
+    // 获取本地地址
+    struct sockaddr_in local;
+    bzero(&local, sizeof(local));
+    socklen_t addrLen = static_cast<socklen_t>(sizeof(local));
+    if (::getsockname(connfd, reinterpret_cast<sockaddr*>(&local), &addrLen) < 0) {
+        LOG_ERROR << "TcpServer::HandleNewConnection getLocalAddr";
+    }
+    InetAddress local_addr(local);
+
+    // 创建TcpConnection
+    TcpConnectionPtr conn(
+        std::make_shared<TcpConnection>(
+            loop, connfd, local_addr, peer_addr
+        )
     );
-    connection_map_.insert({connfd, conn});
+    connection_map_[connfd] = conn;
 
     conn->SetConnectionCallback(connection_callback_);
     conn->SetMessageCallback(message_callback_);
@@ -88,6 +103,7 @@ void TcpServer::HandleNewConnection() {
     conn->SetCloseCallback(
         std::bind(&TcpServer::RemoveConnection, this, std::placeholders::_1)
     );
+    LOG_INFO << "Connection established";
     loop->RunInLoop(
         std::bind(&TcpConnection::ConnectionEstablished, conn)
     );

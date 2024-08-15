@@ -27,12 +27,12 @@ public:
     bool GotAll() const { return state_ == kGotAll; }
     void reset();
 
-    const std::string& method() const { return method_; }
-    const std::string& path() const { return path_; }
-    const std::string& version() const { return version_; }
-    const std::unordered_map<std::string, std::string>& headers() const { return headers_; }
+    const std::string method() const { return method_; }
+    const std::string path() const { return path_; }
+    const std::string version() const { return version_; }
+    const std::unordered_map<std::string, std::string> headers() const { return headers_; }
 
-    const std::string& GetHeader(const std::string &field) const {
+    const std::string GetHeader(const std::string &field) const {
         auto it = headers_.find(field);
         return it == headers_.end() ? std::string() : it->second;
     }

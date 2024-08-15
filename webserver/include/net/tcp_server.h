@@ -61,7 +61,7 @@ private:
     WriteCompleteCallback write_complete_callback_;
     ThreadInitCallback thread_init_callback_;
 
-    std::atomic_bool started_;
+    std::atomic_int started_;
 
     int next_conn_id_;
     ConnectionMap connection_map_;

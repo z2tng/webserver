@@ -171,8 +171,8 @@ void TcpConnection::ShutdownInLoop() {
 
 void TcpConnection::ConnectionEstablished() {
     SetState(kConnected);
-    channel_->EnableReading();
     channel_->set_holder(shared_from_this());
+    channel_->EnableReading();
     if (connection_callback_) connection_callback_(shared_from_this());
 }
 

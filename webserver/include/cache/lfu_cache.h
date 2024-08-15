@@ -64,12 +64,13 @@ using FreqNode = Node<KeyList>;
 class LfuCache {
 public:
     static LfuCache& instance();
+    void Init(size_t capacity = 10);
 
     void Set(const std::string &key, const std::string &value);
     bool Get(const std::string &key, std::string &value);
 
 private:
-    LfuCache(size_t capacity = 10);
+    LfuCache() {};
     ~LfuCache();
 
     void AddFreqNode(KeyNode *key_node, FreqNode *freq_node);

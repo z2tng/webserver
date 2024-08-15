@@ -24,7 +24,7 @@ void CacheTestHttpCallback(const HttpRequestParser &req,
     resp.AddHeader("Server", "LFU Cache Server");
 
     std::string file_name = req.path();
-    if (file_name == "/") {
+    if (file_name == "/" || file_name.empty()) {
         file_name = "/index.html";
     }
     size_t question_mark = file_name.find('?');

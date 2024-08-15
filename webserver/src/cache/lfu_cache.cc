@@ -44,14 +44,6 @@ void KeyList::Remove(KeyNode *node) {
     }
 }
 
-LfuCache::LfuCache(size_t capacity)
-        : capacity_(capacity),
-          dummy_head_(NewElement<FreqNode>()),
-          key_table_(),
-          freq_table_() {
-    dummy_head_->data().init(0);
-}
-
 LfuCache::~LfuCache() {
     for (auto &pair : key_table_) {
         DeleteElement(pair.second);
@@ -60,6 +52,12 @@ LfuCache::~LfuCache() {
         DeleteElement(pair.second);
     }
     DeleteElement(dummy_head_);
+}
+
+void LfuCache::Init(size_t capacity) {
+    capacity_ = capacity;
+    dummy_head_ = NewElement<FreqNode>();
+    dummy_head_->data().init(0);
 }
 
 LfuCache& LfuCache::instance() {

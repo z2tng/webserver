@@ -16,7 +16,7 @@ Socket::~Socket() {
 void Socket::Bind(const InetAddress &addr) {
     if (0 > ::bind(sockfd_,
                    reinterpret_cast<const sockaddr*>(addr.GetSockAddr()),
-                   sizeof(sockaddr))) {
+                   sizeof(sockaddr_in))) {
         LOG_FATAL << "bind socket: " << sockfd_ << " error";
     }
 }
