@@ -4,6 +4,7 @@
 #include "thread/thread.h"
 #include "log/logger.h"
 
+#include <iostream>
 #include <unistd.h>
 #include <sys/eventfd.h>
 #include <fcntl.h>
@@ -14,7 +15,7 @@ __thread EventLoop *t_loop_in_this_thread = nullptr;
 
 int EventLoop::CreateEventFd() {
     int event_fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (eventfd < 0) {
+    if (event_fd < 0) {
         LOG_ERROR << "Create eventfd error";
     }
     return event_fd;

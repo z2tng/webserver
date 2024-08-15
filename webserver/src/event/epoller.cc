@@ -1,5 +1,6 @@
 #include "event/epoller.h"
 #include "event/channel.h"
+#include "log/logger.h"
 
 #include <strings.h>
 #include <sys/epoll.h>
@@ -35,7 +36,7 @@ void Epoller::Poll(ChannelList &active_channels) {
     for (int i = 0; i < num_events; ++i) {
         Channel *channel = static_cast<Channel*>(ready_events_[i].data.ptr);
         channel->set_revents(ready_events_[i].events);
-        active_channels.push_back(channel->shared_from_this());
+        active_channels.push_back(channel);
     }
 
     if (num_events == ready_events_.size()) {
@@ -43,46 +44,48 @@ void Epoller::Poll(ChannelList &active_channels) {
     }
 }
 
-bool Epoller::HasChannel(std::shared_ptr<Channel> sp_channel) const {
-    auto it = channel_map_.find(sp_channel->fd());
-    return it != channel_map_.end() && it->second == sp_channel;
+bool Epoller::HasChannel(Channel *channel) const {
+    auto it = channel_map_.find(channel->fd());
+    return it != channel_map_.end() && it->second == channel;
 }
 
-void Epoller::EpollAdd(std::shared_ptr<Channel> sp_channel, int timeout) {
-    // TODO: 处理超时
-    int fd = sp_channel->fd();
-    channel_map_[fd] = sp_channel;
-    sp_channel->update_last_events();
-    Update(EPOLL_CTL_ADD, sp_channel);
-}
-
-void Epoller::EpollMod(std::shared_ptr<Channel> sp_channel, int timeout) {
-    // TODO: 处理超时
-    if (sp_channel->update_last_events()) {
-        Update(EPOLL_CTL_MOD, sp_channel);
+void Epoller::UpdateChannel(Channel *channel, int timeout) {
+    int fd = channel->fd();
+    if (channel_map_.find(fd) == channel_map_.end()) {
+        channel_map_[fd] = channel;
+        Update(EPOLL_CTL_ADD, channel);
+    } else {
+        if (channel->IsNoneEvent()) {
+            Update(EPOLL_CTL_DEL, channel);
+            channel_map_.erase(fd);
+        } else {
+            Update(EPOLL_CTL_MOD, channel);
+        }
     }
 }
 
-void Epoller::EpollDel(std::shared_ptr<Channel> sp_channel) {
-    channel_map_.erase(sp_channel->fd());
-    Update(EPOLL_CTL_DEL, sp_channel);
+void Epoller::RemoveChannel(Channel *channel) {
+    int fd = channel->fd();
+    if (channel_map_.find(fd) != channel_map_.end()) {
+        Update(EPOLL_CTL_DEL, channel);
+        channel_map_.erase(fd);
+    }
 }
 
-void Epoller::Update(int operation, std::shared_ptr<Channel> sp_channel) {
+void Epoller::Update(int operation, Channel *channel) {
     epoll_event event;
     bzero(&event, sizeof(event));
-    event.events = operation == EPOLL_CTL_DEL ?
-                       sp_channel->last_events() : sp_channel->events();
-    event.data.ptr = sp_channel.get();
-    int fd = sp_channel->fd();
+    event.events = channel->events();
+    event.data.ptr = channel;
+    int fd = channel->fd();
 
     if (epoll_ctl(epoll_fd_, operation, fd, &event) < 0) {
         if (operation == EPOLL_CTL_ADD) {
-            // TODO: LOG add error
+            LOG_ERROR << "epoll_ctl add error: " << strerror(errno);
         } else if (operation == EPOLL_CTL_MOD) {
-            // TODO: LOG mod error
+            LOG_ERROR << "epoll_ctl mod error: " << strerror(errno);
         } else {
-            // TODO: LOG del error
+            LOG_ERROR << "epoll_ctl del error: " << strerror(errno);
         }
     }
 }

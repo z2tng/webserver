@@ -31,18 +31,15 @@ public:
     void RunInLoop(const Function &func);
     void QueueInLoop(const Function &func);
 
-    bool HasChannel(std::shared_ptr<Channel> channel) const {
+    bool HasChannel(Channel *channel) const {
         return epoller_->HasChannel(channel);
     }
 
-    void PollerAdd(std::shared_ptr<Channel> channel, int timeout = 0) {
-        epoller_->EpollAdd(channel, timeout);
+    void UpdateChannel(Channel *channel, int timeout = 0) {
+        epoller_->UpdateChannel(channel, timeout);
     }
-    void PollerMod(std::shared_ptr<Channel> channel, int timeout = 0) {
-        epoller_->EpollMod(channel, timeout);
-    }
-    void PollerDel(std::shared_ptr<Channel> channel) {
-        epoller_->EpollDel(channel);
+    void RemoveChannel(Channel *channel) {
+        epoller_->RemoveChannel(channel);
     }
 
     bool is_in_loop_thread() const { return thread_id_ == current_thread::tid(); }
@@ -52,7 +49,7 @@ private:
     void HandleRead();
     void PerformPendingFunctions();
 
-    using ChannelList = std::vector<std::shared_ptr<Channel>>;
+    using ChannelList = std::vector<Channel*>;
 
     const pid_t thread_id_;
     int wakeup_fd_;

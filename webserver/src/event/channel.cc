@@ -16,7 +16,7 @@ Channel::~Channel() {}
 
 void Channel::HandleEvents() {
     if (holded_) {
-        std::shared_ptr<void> guard = holder();
+        std::shared_ptr<void> guard = holder_.lock();
         if (guard) {
             HandleEventsWithGuard();
         }
@@ -43,12 +43,12 @@ void Channel::HandleEventsWithGuard() {
     }
 }
 
-void Channel::update() {
-    loop_->PollerMod(shared_from_this());
+void Channel::Update() {
+    loop_->UpdateChannel(this);
 }
 
 void Channel::Remove() {
-    loop_->PollerDel(shared_from_this());
+    loop_->RemoveChannel(this);
 }
 
 }
