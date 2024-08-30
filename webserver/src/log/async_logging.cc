@@ -70,10 +70,11 @@ void AsyncLogging::ThreadFunc() {
         {
             std::unique_lock<std::mutex> lock(mutex_);
             if (buffers_.empty()) {
+                // 等待超时或者有数据需要写入
                 cond_.wait_for(lock, std::chrono::microseconds(timeout_));
             }
-            buffers_.push_back(current_buffer_);
-            current_buffer_.reset();
+            // 将当前 buffer 写入文件
+            buffers_.push_back(std::move(current_buffer_));
             current_buffer_ = std::move(new_buffer1);
             buffers_to_write.swap(buffers_);
             if (!next_buffer_) {
@@ -81,6 +82,7 @@ void AsyncLogging::ThreadFunc() {
             }
         }
 
+        // 当缓冲区过多时, 删除多余的缓冲区
         if (buffers_to_write.size() >= kMaxBufferCount) {
             buffers_to_write.erase(buffers_to_write.begin() + 2, buffers_to_write.end());
         }
