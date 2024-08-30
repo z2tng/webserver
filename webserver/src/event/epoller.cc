@@ -14,7 +14,7 @@ Epoller::Epoller()
         : epoll_fd_(epoll_create1(EPOLL_CLOEXEC)),
           ready_events_(kInitEventListSize) {
     if (epoll_fd_ < 0) {
-        // TODO: LOG epoll create error
+        LOG_FATAL << "epoll create error: " << errno;
     }
 }
 
@@ -26,10 +26,10 @@ void Epoller::Poll(ChannelList &active_channels) {
     int num_events = epoll_wait(epoll_fd_, &*ready_events_.begin(), ready_events_.size(), kEpollTimeOut);
 
     if (num_events < 0 && errno != EINTR) {
-        // TODO: LOG error
+        LOG_ERROR << "epoll wait error: " << errno;
         return;
     } else if (num_events == 0) {
-        // TODO: LOG timeout
+        LOG_ERROR << "epoll wait timeout";
         return;
     }
 
